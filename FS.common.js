@@ -83,7 +83,7 @@ var RNFS = {
       })
       .catch(convertError);
   },
-  
+
   exists(filepath) {
     return _exists(filepath)
       .catch(convertError);
@@ -150,7 +150,7 @@ var RNFS = {
       .catch(convertError);
   },
 
-  downloadFile(fromUrl, toFile, begin, progress) {
+  downloadFile(fromUrl, headers, toFile, begin, progress) {
     var jobId = getJobId();
     var subscriptionIos, subscriptionAndroid;
 
@@ -173,7 +173,7 @@ var RNFS = {
         subscriptionAndroid = DeviceEventEmitter.addListener('DownloadProgress-' + jobId, progress);
     }
 
-    return _downloadFile(fromUrl, toFile, jobId)
+    return _downloadFile(fromUrl, headers, toFile, jobId)
       .then(res => {
         if (subscriptionIos) subscriptionIos.remove();
         if (subscriptionAndroid) subscriptionAndroid.remove();

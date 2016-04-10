@@ -43,6 +43,14 @@ public class Downloader extends AsyncTask<DownloadParams, int[], DownloadResult>
     try {
       HttpURLConnection connection = (HttpURLConnection)param.src.openConnection();
 
+      for (Map.Entry<String, String> entry : param.headers.entrySet()) {
+        // while (iterator.hasNextKey()) {
+          String headerKey = entry.getKey();
+          String valueKey = entry.getValue();
+          connection.setRequestProperty(headerKey, valueKey);
+        // }
+      }
+
       connection.setConnectTimeout(5000);
       connection.connect();
 
@@ -56,7 +64,7 @@ public class Downloader extends AsyncTask<DownloadParams, int[], DownloadResult>
       for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
         String headerKey = entry.getKey();
         String valueKey = entry.getValue().get(0);
-        
+
         if (headerKey != null && valueKey != null) {
           headersFlat.put(headerKey, valueKey);
         }

@@ -22,7 +22,7 @@
 - (void)downloadFile:(DownloadParams*)params
 {
   _params = params;
-  
+    
   _bytesWritten = 0;
 
   NSURL* url = [NSURL URLWithString:_params.fromUrl];
@@ -30,6 +30,14 @@
   NSMutableURLRequest* downloadRequest = [NSMutableURLRequest requestWithURL:url
                                                                  cachePolicy:NSURLRequestUseProtocolCachePolicy
                                                              timeoutInterval:30];
+
+    
+  for (NSString* key in _params.headers) {
+    id value = [_params.headers objectForKey:key];
+    [downloadRequest setValue:value forHTTPHeaderField:key];
+  }
+    
+    
 
   [[NSFileManager defaultManager] createFileAtPath:_params.toFile contents:nil attributes:nil];
 
