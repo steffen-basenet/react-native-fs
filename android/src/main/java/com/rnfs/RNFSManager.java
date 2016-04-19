@@ -41,6 +41,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 public class RNFSManager extends ReactContextBaseJavaModule {
 
   private static final String NSDocumentDirectoryPath = "NSDocumentDirectoryPath";
+  private static final String NSExternalDirectoryPath = "NSExternalDirectoryPath";
   private static final String NSPicturesDirectoryPath = "NSPicturesDirectoryPath";
   private static final String NSCachesDirectoryPath = "NSCachesDirectoryPath";
   private static final String NSDocumentDirectory = "NSDocumentDirectory";
@@ -281,6 +282,8 @@ public class RNFSManager extends ReactContextBaseJavaModule {
       params.onDownloadProgress = new DownloadParams.OnDownloadProgress() {
         public void onDownloadProgress(int contentLength, int bytesWritten) {
           WritableMap data = Arguments.createMap();
+
+          data.putInt("jobId", jobId);
           data.putInt("contentLength", contentLength);
           data.putInt("bytesWritten", bytesWritten);
 
@@ -324,6 +327,12 @@ public class RNFSManager extends ReactContextBaseJavaModule {
     final Map<String, Object> constants = new HashMap<>();
     constants.put(NSDocumentDirectory, 0);
     constants.put(NSDocumentDirectoryPath, this.getReactApplicationContext().getFilesDir().getAbsolutePath());
+    File externalDirectory = this.getReactApplicationContext().getExternalFilesDir(null);
+    if (externalDirectory != null) {
+        constants.put(NSExternalDirectoryPath, externalDirectory.getAbsolutePath());
+    } else {
+        constants.put(NSExternalDirectoryPath, null);
+    }
     constants.put(NSPicturesDirectoryPath, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath());
     constants.put(NSCachesDirectoryPath, this.getReactApplicationContext().getCacheDir().getAbsolutePath());
     constants.put(NSFileTypeRegular, 0);

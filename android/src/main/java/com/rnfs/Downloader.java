@@ -39,9 +39,10 @@ public class Downloader extends AsyncTask<DownloadParams, int[], DownloadResult>
   private void download(DownloadParams param, DownloadResult res) throws IOException {
     InputStream input = null;
     OutputStream output = null;
+    HttpURLConnection connection = null;
 
     try {
-      HttpURLConnection connection = (HttpURLConnection)param.src.openConnection();
+      connection = (HttpURLConnection)param.src.openConnection();
 
       for (Map.Entry<String, String> entry : param.headers.entrySet()) {
         // while (iterator.hasNextKey()) {
@@ -96,6 +97,7 @@ public class Downloader extends AsyncTask<DownloadParams, int[], DownloadResult>
     } finally {
       if (output != null) output.close();
       if (input != null) input.close();
+      if (connection != null) connection.disconnect();
     }
   }
 
