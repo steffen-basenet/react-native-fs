@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import android.os.Environment;
 import android.os.AsyncTask;
+import android.os.StatFs;
 import android.util.Base64;
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -36,13 +37,14 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 
 public class RNFSManager extends ReactContextBaseJavaModule {
 
   private static final String NSDocumentDirectoryPath = "NSDocumentDirectoryPath";
   private static final String NSExternalDirectoryPath = "NSExternalDirectoryPath";
   private static final String NSPicturesDirectoryPath = "NSPicturesDirectoryPath";
+  private static final String NSTemporaryDirectoryPath = "NSTemporaryDirectoryPath";
   private static final String NSCachesDirectoryPath = "NSCachesDirectoryPath";
   private static final String NSDocumentDirectory = "NSDocumentDirectory";
 
@@ -216,7 +218,7 @@ public class RNFSManager extends ReactContextBaseJavaModule {
 
   private void sendEvent(ReactContext reactContext, String eventName, @Nullable WritableMap params) {
     reactContext
-    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+    .getJSModule(RCTNativeAppEventEmitter.class)
     .emit(eventName, params);
   }
 
@@ -316,6 +318,26 @@ public class RNFSManager extends ReactContextBaseJavaModule {
     // TODO: Not sure what equilivent would be?
   }
 
+  @ReactMethod
+  public void getFSInfo(Callback callback) {
+    File path = Environment.getDataDirectory();
+    StatFs stat = new StatFs(path.getPath());
+    long totalSpace;
+    long freeSpace;
+    if (android.os.Build.VERSION.SDK_INT >= 18) {
+      totalSpace = stat.getTotalBytes();
+      freeSpace = stat.getFreeBytes();
+    } else {
+      long blockSize = stat.getBlockSize();
+      totalSpace = blockSize * stat.getBlockCount();
+      freeSpace = blockSize * stat.getAvailableBlocks();
+    }
+    WritableMap info = Arguments.createMap();
+    info.putDouble("totalSpace", (double)totalSpace);   // Int32 too small, must use Double
+    info.putDouble("freeSpace", (double)freeSpace);
+    callback.invoke(null, info);
+  }
+
   private WritableMap makeErrorPayload(Exception ex) {
     WritableMap error = Arguments.createMap();
     error.putString("message", ex.getMessage());
@@ -327,6 +349,7 @@ public class RNFSManager extends ReactContextBaseJavaModule {
     final Map<String, Object> constants = new HashMap<>();
     constants.put(NSDocumentDirectory, 0);
     constants.put(NSDocumentDirectoryPath, this.getReactApplicationContext().getFilesDir().getAbsolutePath());
+    constants.put(NSTemporaryDirectoryPath, null);
     File externalDirectory = this.getReactApplicationContext().getExternalFilesDir(null);
     if (externalDirectory != null) {
         constants.put(NSExternalDirectoryPath, externalDirectory.getAbsolutePath());
